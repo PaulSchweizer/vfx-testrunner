@@ -1,0 +1,59 @@
+#! /usr/bin/env python
+import argparse
+import logging
+import os
+import subprocess
+
+
+INTERPRETERS = {
+    "python": "python",
+    "maya": "mayapy",
+    "nuke": "nuke -t",
+    "houdini": "hython"
+}
+
+
+def main():
+    """Run unittests with pytest, based on the chosen interpreter."""
+    parser = argparse.ArgumentParser(
+        usage="vfx-testrunner [file_or_dir] [pytest options] [interpreter]")
+    parser.add_argument(
+        "--pytest-help", "-p", action="store_true",
+        help="Show the pytest help")
+
+    parser.add_argument(
+        "--interpreter", "-i", choices=INTERPRETERS.keys(),
+        default="python", help="The python interpreter to use.")
+
+    # The unknown args are the pytest arguments
+    args, pytest_args = parser.parse_known_args()
+
+    if args.pytest_help:
+        pytest_args += ["--help"]
+
+    _run_tests(args.interpreter, pytest_args)
+
+
+def _run_tests(interpreter, pytest_args):
+    """Run unittests with pytest, based on the chosen interpreter."""
+    if interpreter not in INTERPRETERS:
+        raise Exception(
+            "Interpreter {interpreter} not supported. "
+            "Please choose between {interpreters}".format(
+                interpreter=interpreter,
+                interpreters=INTERPRETERS.keys()))
+
+    cmd = "{interpreter} \"{test_cmd}\" {argv}".format(
+        interpreter=INTERPRETERS[interpreter],
+        test_cmd=os.path.join(
+            os.path.dirname(__file__),
+            "{0}_test.py".format(interpreter)),
+        argv=" ".join(pytest_args))
+
+    logging.warning("Command: {0}".format(cmd))
+
+    subprocess.call(cmd, shell=True)
+
+
+if __name__ == "__main__":
+    main()
