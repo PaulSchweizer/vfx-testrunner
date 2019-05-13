@@ -50,7 +50,7 @@ def _run_tests(interpreter, pytest_args):
             "{0}_test.py".format(interpreter)),
         argv=" ".join(pytest_args))
 
-    logging.warning("Command: {0}".format(cmd))
+    logging.info("Command: {0}".format(cmd))
 
     subprocess.call(cmd, shell=True)
 
